@@ -20,11 +20,17 @@
 
 -   Collection
 
-    List、ArrayList、LinkedList、Vector、Stack、Set、HashSet、LinkedHashSet、TreeSet
+    List、ArrayList、LinkedList、Vector、Stack、
+
+    Set、HashSet、LinkedHashSet、TreeSet
 
 -   Map
 
-    Map、HashMap、LinkedHashMap、Hashtable、TreeMap、ConcurrentHashMap
+    Map、HashMap、LinkedHashMap、TreeMap、ConcurrentHashMap、Hashtable
+
+Java集合框架图：
+
+![java集合框架图](./imgs/Java集合框架图.gif)
 
 ### 1.3、ArrayList 和 Vector 的区别是什么？
 
