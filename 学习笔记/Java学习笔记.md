@@ -3175,7 +3175,7 @@ Consistency（一致性）、 Availability（可用性）、Partition tolerance�
 |             数据流操作开发包             | SpringCloud Stream（封装与Redis，Rabbit，Kafka等发送接收消息） |
 |               事件消息总线               |                    SpringCloud Bus，Nacos                    |
 
-![Cloud升级](/Users/chengyingkui/Documents/学习笔记/imgs/Cloud升级.png)
+![Cloud升级](./imgs/Cloud升级.png)
 
 ## 9、SpringCloud中的常用组件
 
@@ -3225,7 +3225,7 @@ Consistency（一致性）、 Availability（可用性）、Partition tolerance�
 
 ## 12、SpringCloudStream标准流程
 
-![SpringCloudStream标准流程](/Users/chengyingkui/Documents/学习笔记/imgs/SpringCloudStream标准流程.png)
+![SpringCloudStream标准流程](./imgs/SpringCloudStream标准流程.png)
 
 ## 13、SpringCloudStream重复消费怎么导致的？怎么解决重复消费问题？
 
@@ -3308,6 +3308,196 @@ Consistency（一致性）、 Availability（可用性）、Partition tolerance�
 <font color="red">1、消息队列主动推送消息给消费者。缺点：存在消费者消费速度不一致，速度快的导致资源浪费，速度慢的导致消费积压</font>
 
 <font color="red">2、消费者主动去消息队列拉取消息。缺点：因为该方式消费者会维护一个轮询，询问消息队列是否有新消息，若没有新消息会导致资源浪费</font>
+
+### 15.3、springcloud中使用kafka
+
+-   下载kafka，进入kafka目录
+
+-   修改server.properties
+
+    ```properties
+    log.dirs=${kafka目录}/logs/kafka-logs
+    ```
+
+-   先启动zookeeper：
+
+    ```she
+    bin/zookeeper-server-start.sh config/zookeeper.properties
+    ```
+
+-   再另起一个终端进程启动kafka，因为现在的kafka默认需要依赖zookeeper：
+
+    ```she
+    bin/kafka-server-start.sh config/server.properties
+    ```
+
+-   创建Java多模块工程：
+
+    <img src="./imgs/kafka工程结构图.png" alt="kafka工程结构图.png" style="zoom:50%;" />
+
+```xml
+<!--Parent-->
+<dependencyManagement>
+    <dependencies>
+        <!--SpringBoot 2.2.5.RELEASE-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>2.2.5.RELEASE</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <!--SpringCloud Hoxton.SR3-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>Hoxton.SR3</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <!--SpringCloudStream Hoxton.SR3-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-stream-dependencies</artifactId>
+            <version>Horsham.SR3</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<!--productor consumer-->
+<!--Kafka-->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-stream-kafka</artifactId>
+</dependency>
+```
+
+productor: application.yaml
+
+```yaml
+server:
+  port: 8080
+
+spring:
+  application:
+    name: productor
+  profiles:
+    active: dev # dev | test | prod
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092 # kafka节点，集群逗号隔开
+#          zk-nodes: localhost:2181 # zookeeper节点，集群逗号隔开
+          auto-create-topics: true # 开启自动创建topic
+      bindings:
+        IKafkaOut:
+          destination: kafka-topic
+          content-type: application/json
+```
+
+consumer: application.yaml
+
+```yaml
+server:
+  port: 8081
+
+spring:
+  application:
+    name: consumer
+  profiles:
+    active: dev # dev | test | prod
+  cloud:
+    nacos:
+      discovery:
+        server-addr: http://localhost:8848
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092 # kafka节点，集群逗号隔开
+#          zk-nodes: localhost:2181 # zookeeper节点，集群逗号隔开
+          auto-create-topics: true # 开启自动创建topic
+      bindings:
+        IKafkaInput:
+          destination: kafka-topic
+          group: kafka-group
+
+```
+
+productor:
+
+```java
+@SpringBootApplication
+@EnableBinding(IKafkaOut.class)
+public class ProductorRun {
+    public static void main(String[] args) {
+        SpringApplication.run(ProductorRun.class, args);
+    }
+}
+public interface IKafkaOut {
+    String IKafkaOut = "IKafkaOut";
+
+    @Output(IKafkaOut)
+    MessageChannel output();
+}
+@RestController
+@Slf4j
+public class SendController {
+    @Autowired
+    private IKafkaOut kafkaOut;
+
+    @GetMapping("/send")
+    public String send() {
+        final Map<String, Object> payload = new HashMap<>();
+        payload.put("succsss", true);
+        payload.put("msg", "处理成功");
+        payload.put("data", 123);
+        payload.put("date", LocalDateTime.now());
+        final Message<Map<String, Object>> message = MessageBuilder.withPayload(payload).build();
+        log.info("发送消息: " + JSON.toJSONString(message.getPayload()));
+        kafkaOut.output().send(message);
+        return "send success";
+    }
+}
+```
+
+consumer: 
+
+```java
+@SpringBootApplication
+@EnableBinding(IKafkaInput.class)
+public class ConsumerRun {
+    public static void main(String[] args) {
+        SpringApplication.run(ConsumerRun.class, args);
+    }
+}
+public interface IKafkaInput {
+    String IKafkaInput = "IKafkaInput";
+
+    @Input(IKafkaInput)
+    MessageChannel input();
+}
+@Service
+@Slf4j
+public class KafkaConsumerService {
+    @StreamListener(IKafkaInput.IKafkaInput)
+    public void getMessage(String body) {
+        log.info("接收到的消息: " + body);
+    }
+}
+```
+
+```tex
+productor发送消息：
+发送消息: {"msg":"处理成功","date":"2022-05-02T18:29:33.685","succsss":true,"data":123}
+
+consumer接收到消息：
+接收到的消息: {"msg":"处理成功","date":"2022-05-02T18:29:33.685","succsss":true,"data":123}
+```
+
+
 
 # 四、面试题
 
