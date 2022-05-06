@@ -326,7 +326,7 @@ public void deSerializable() {
 
 #### 《创建性模式》
 
-#### 5.3.1、单例模式
+#### 5.3.1、单例模式 (<font color="red"> * </font>)
 
 单单例模式有八种方式：
 
@@ -434,7 +434,7 @@ public void deSerializable() {
     2)效率太低了，每个线程在想获得类的实例时候，执行getinstance()方法都要进行同步。而其实这个方法只执行一次实例化代码就够了，后面的想获得该类买例，直接return就行了。方法进行同步效率太低
     3)结论：在实际开发中，不推荐使用这种方式
 
-5.  **懒汉式（线程安全，同步代码块）**
+5.  **懒汉式（线程不安全，同步代码块）**
 
     ```java
     /**
@@ -554,7 +554,7 @@ public void deSerializable() {
     2）这种方式是Effective Java作者Josh Bloch 提倡的方式
     3）结论：推荐使用
 
-#### 5.3.2、工厂模式
+#### 5.3.2、工厂模式 (<font color="red"> * </font>)
 
 1.  **简单工厂模式**
 
@@ -661,7 +661,7 @@ public class Blue implements Color{
     }
 }
 public class ShapeFactory {
-    public com.cxxwl96.designpattern.factory.simple.Shape getShape(String shapeStr) {
+    public Shape getShape(String shapeStr) {
         switch (shapeStr) {
             case "rectangle":
                 return new Rectangle();
@@ -718,7 +718,7 @@ public class FactoryTest {
 
 
 
-#### 5.3.4、原型模式
+#### 5.3.4、原型模式 (<font color="red"> * </font>)
 
 原型模式(Prototype模式}是指：用原型实例指定创建对象的种类，并且通过拷贝这些原型，创建新的对象
 
@@ -757,9 +757,15 @@ public class ShapeTest {
 }
 ```
 
->   在spring的getBean中，当Scope=prototype的时候使用的就是原型模式
+```tex
+false
+Shape(name=多莉, age=24)
+Shape(name=多莉, age=24)
+```
 
-#### 5.3.5、建造者模式
+在spring的getBean中，当Scope=prototype的时候使用的就是原型模式
+
+#### 5.3.5、建造者模式 (<font color="red"> * </font>)
 
 建造者模式(BuilderPattern）又叫`生成器模式`，是一种对象构建模式。它可以将复杂对象的建造过程抽象出来（抽象类别），使这个抽象过程的不同实现方法可以构造出不同表现（属性）的对象。建造者模式是一步一步创建一个复杂的对家，它允许用户只通过指定复杂对象的类型和内容就可以构建它们，用户不需要知道内部的具体构建细节。
 
@@ -903,7 +909,7 @@ public class BuilderTest {
 
 #### 《结构型模式》
 
-#### 5.3.6、适配器模式
+#### 5.3.6、适配器模式 (<font color="red"> * </font>)
 
 适配器模式(Adapter Pattern)将某个类的接口转换成客户端期望的另一个接口表示，主的目的是兼容性，让原本因接口不匹配不能一起工作的两个类可以协同工作。其别名为包装器（Wrapper）
 
@@ -1044,7 +1050,7 @@ public class Voltage5VAdapterTest {
 5
 ```
 
-#### 5.3.7、桥接模式
+#### 5.3.7、桥接模式 (<font color="red"> * </font>)
 
 桥接模式(Bridge模式)是指：将实现与抽象放在两个不同的类层次中，使两个层次可以独立改变。
 
@@ -1065,7 +1071,8 @@ public class RedColor implements Color{
     public String getName() {
         return "红色";
     }
-}`
+}
+public class BlueColor implements Color{
     @Override
     public String getName() {
         return "蓝色";
@@ -1213,7 +1220,7 @@ public class DecoratorTest {
 
 
 
-#### 5.3.9、组合模式
+#### 5.3.9、组合模式 (<font color="red"> * </font>)
 
 适用于树形结构的层级关系
 
@@ -1460,7 +1467,7 @@ public class FacadeTest {
 关闭影院灯光
 ```
 
-#### 5.3.11、享元模式
+#### 5.3.11、享元模式 (<font color="red"> * </font>)
 
 享元模式 (Flyweight Pattern） 也叫蝇量模式：运用共享技术有效地支持大量细粒度的对象。
 
@@ -1522,7 +1529,7 @@ public class FlyWeightTest {
 
 
 
-#### 5.3.12、代理模式
+#### 5.3.12、代理模式 (<font color="red"> * </font>)
 
 -   代理模式：为一个对象提供一个替身，以控制对这个对象的访问。即通过代理对象访问目标对象.这样做的好处是:可以在目标对象实现的基础上,增强额外的功能操作,即扩展目标对象的功能。
 
@@ -1670,7 +1677,7 @@ public class FlyWeightTest {
 
 #### 《行为型模式》
 
-#### 5.3.13、模板方法模式（模板模式）
+#### 5.3.13、模板方法模式（模板模式） (<font color="red"> * </font>)
 
 ```java
 /**
@@ -1984,7 +1991,7 @@ public class VisitorTest {
 
 
 
-#### 5.3.16、迭代器模式
+#### 5.3.16、迭代器模式 (<font color="red"> * </font>)
 
 ```java
 public interface Iterator<T> {
@@ -2038,7 +2045,7 @@ public class IteratorTest {
 赵六
 ```
 
-#### 5.3.17、观察者模式
+#### 5.3.17、观察者模式（发布订阅模式） (<font color="red"> * </font>)
 
 定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新
 
@@ -2136,7 +2143,7 @@ OneObserver收到：456
 TwoObserver收到：456
 ```
 
-#### 5.3.18、中介模式
+#### 5.3.18、中介模式 (<font color="red"> * </font>)
 
 ```java
 /**
@@ -2236,7 +2243,7 @@ public class MediatorTest {
 买家1接收到消息：在哪儿？
 ```
 
-#### 5.3.19、备忘录模式
+#### 5.3.19、备忘录模式 (<font color="red"> * </font>)
 
 **意图：**在不破坏封装性的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态。
 
@@ -2535,7 +2542,7 @@ Stop state do action
 Current state: Stop
 ```
 
-#### 5.3.22、策略模式
+#### 5.3.22、策略模式 (<font color="red"> * </font>)
 
 **意图：**定义一系列的算法,把它们一个个封装起来, 并且使它们可相互替换。
 
@@ -2596,7 +2603,7 @@ public class StrategyTest {
 5-3=2
 ```
 
-#### 5.3.23、职责链模式（责任链模式）
+#### 5.3.23、职责链模式（责任链模式） (<font color="red"> * </font>)
 
 **意图：**避免请求发送者与接收者耦合在一起，让多个对象都有可能接收请求，将这些对象连接成一条链，并且沿着这条链传递请求，直到有对象处理它为止。
 
