@@ -2721,9 +2721,9 @@ ConsoleLogger: 打了一个ERROR级别的log
 
 - 控制反转是指把对象创建和对象之间的调用过程交给Spring进行管理
 
-- 使用ICO的目的：为了降低耦合度
+- 使用IOC的目的：为了降低耦合度
 
-## 2、ICO底层原理
+## 2、IOC底层原理
 
 - xml解析、工厂模式、反射机制
 
@@ -2742,7 +2742,9 @@ xml中由scope属性设置，注解使用@Scope设置
 
 -  调用构造器创建bean实例
 - 调用set方法设置bean属性
+- 调用before方法（需要spring配置中配置了实现BeanPostProcessor接口）
 - 调用bean的初始化方法
+- 调用after方法（需要spring配置中配置了实现BeanPostProcessor接口）
 - 使用bean的其他方法
 - 当容器关闭的时候调用bean的销毁方法
 
@@ -3106,6 +3108,12 @@ public void test() {
 - **同步**：RPC ,REST等。
 - **异步**：消息队列，要考虑消息的可靠传输、高性能，以及编程模型的变化等。
 
+### 2.1、RPC与REST的区别
+
+<img src="./imgs/RPC&REST.png" alt="RPC&REST" style="zoom:70%;" />
+
+<img src="./imgs/RPC&REST模式比较.png" alt="RPC&REST模式比较" style="zoom:70%;" />
+
 ## 3、springcloud与Dubbo的区别？
 
 |     功能     |      Dubbo       |            SpringCloud             |
@@ -3185,8 +3193,8 @@ Consistency（一致性）、 Availability（可用性）、Partition tolerance�
 |                 服务监控                 |            Zabbix，Nagios，Metrics，Specatator等             |
 |                全链路追踪                |               Sleuth、Zipkin，Brave，Dapper等                |
 |                 服务部署                 |               Docker，OpenStack，Kubernetes等                |
-|             数据流操作开发包             | SpringCloud Stream（封装与Redis，Rabbit，Kafka等发送接收消息） |
-|               事件消息总线               |                    SpringCloud Bus，Nacos                    |
+|             数据流操作开发包             | SpringCloudStream（封装与Redis，Rabbit，Kafka等发送接收消息） |
+|               事件消息总线               |                    SpringCloudBus，Nacos                     |
 
 ![Cloud升级](./imgs/Cloud升级.png)
 
