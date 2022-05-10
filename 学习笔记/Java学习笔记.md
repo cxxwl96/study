@@ -3189,6 +3189,7 @@ Consistency（一致性）、 Availability（可用性）、Partition tolerance�
 | 服务接口调用（客户端调用服务的简化工具） |                      Feign、OpenFeign等                      |
 |                 消息队列                 |                 Kafka，RabbitMQ，ActiveMQ等                  |
 |             服务配置中心管理             |           SpringCloudConfig，Nacos，Apolo，Chef等            |
+|                分布式事务                |                            Seata                             |
 |           服务路由（API网关）            |                  SpringCloudGateway、Zuul等                  |
 |                 服务监控                 |            Zabbix，Nagios，Metrics，Specatator等             |
 |                全链路追踪                |               Sleuth、Zipkin，Brave，Dapper等                |
@@ -3518,7 +3519,37 @@ consumer接收到消息：
 接收到的消息: {"msg":"处理成功","date":"2022-05-02T18:29:33.685","succsss":true,"data":123}
 ```
 
+## 16、分布式事务之Seata
 
+Seata 是一款开源的分布式事务解决方案，致力于提供高性能和简单易用的分布式事务服务。Seata 将为用户提供了 AT、TCC、SAGA 和 XA 事务模式，为用户打造一站式的分布式解决方案。
+
+### 16.1、Seata分布式事务处理过程的一ID
+
+Transaction ID XID：全局唯一的事务ID
+
+### 16.2、Seata三个组件模型
+
+- **TC (Transaction Coordinator) - 事务协调者**
+
+	维护全局和分支事务的状态，驱动全局事务提交或回滚。
+
+- **TM (Transaction Manager) - 事务管理器**
+
+	定义全局事务的范国：开始全局事务、提交或回滚全局事务。
+
+- **RM (Resource Manager) - 资源管理器**
+
+	管理分支事务处理的资源，与TC交谈以注册分支事务和报告分支事务的状态，井驱动分支事务提交或回滚。
+
+### 16.3、处理过程
+
+1. TM 向TC 申请开启一个全局事务，全局事务创建成功并生成一个全局唯一的 XID;
+2. XID 在微服务调用链路的上下文中传播；
+3. RM 向TC 注册分支事务，将其纳入XID 对应全局事务的管辖；
+4. TM向TC 发起针对 XID 的全局提交或回滚决议；
+5. TC 调度 XID 下管糖的全部分支事务完成提交或回滚请求。
+
+<img src="./imgs/seata处理过程.png" alt="seata处理过程.png" style="zoom:50%;" />
 
 # 四、面试题
 
