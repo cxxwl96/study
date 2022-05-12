@@ -2715,7 +2715,112 @@ FileLogger: 打了一个ERROR级别的log
 ConsoleLogger: 打了一个ERROR级别的log
 ```
 
-# 二、Spring篇
+# 二、数据库篇
+
+以MySQL为例
+
+## 1、事务
+
+1、事务的特性-ACID：
+
+-   **Atomicity（原子性）**
+-   **Consistency（一致性）**
+-   **Isolation（隔离性）**
+-   **Durability（持久性）**
+
+2、隔离级别
+
+-   **Read Uncommited**：读未提交。可读取未提交的数据
+-   **Read Committed**：读已提交。仅读取已提交的数据
+-   **Repeatable Reads**：可重复读。在一个事务中select或count之后得到的值在这个事务中不会因为其他事务的修改而改变当前事务中已读取到的值，当前事务已读取到的数据还是不变的
+-   **Serializable**：可串行化。在一个事务中不能读取其他事务未提交或未回滚的数据，因为其他事务会锁住**整张表**，所以会导致当前事务阻塞
+
+隔离级别可能产生的问题：
+
+| 隔离级别 | 脏读 | 不可重复读 | 幻读 |
+| -------- | ---- | ---------- | ---- |
+| 读未提交 | √    | √          | √    |
+| 读已提交 | X    | √          | √    |
+| 可重复读 | X    | X          | √    |
+| 可串行化 | X    | X          | X    |
+
+3、隔离级别相关命令
+
+-   查询当前会话的事务隔离级别：
+
+    >   show variables like '%transaction_isolation%’
+
+-   设置全局事务隔离级别
+
+    >   set global transaction isolation level [read uncommitted | read committed | repeatable read | serializable]
+
+​		注意，该命令不会影响当前已连接的会话的事务隔离级别，对于以后的连接会话生效。
+
+-   设置当前会话的事务隔离级别
+
+    >   set session transaction isolation level [read uncommitted | read committed | repeatable read | serializable]
+
+​		注意，该命令只对当前会话生效，不影响其他会话和全局的事务隔离级别配置。
+
+-   设置下一次事务的事务隔离级别
+
+    >   set transaction isolation level [read uncommitted | read committed | repeatable read | serializable]
+
+​		注意，该命令只对下一次事务生效，不会影响会话本身设置的事务隔离级别。
+
+## 2、数据库锁
+
+![数据库锁](./imgs/数据库锁.png)
+
+1、锁的级别
+
+-   **行锁**
+
+    访问数据库的时候，锁定整个行数据，防止并发错误。
+
+-   **表锁**
+
+    访问数据库的时候，索引失效导致行锁升级为表锁，锁定整个表数据，防止并发错误。
+
+-   **库锁**
+
+    是指对整个数据库加锁。使用场景是全库逻辑备份。官方自带的逻辑备份工具是 mysqldump。当 mysqldump 使用参数–single-transaction 的时候，导数据之前就会启动一个事务，来确保拿到一致性视图。而由于 MVCC 的支持，这个过程中数据是可以正常更新的。（支持事务的引擎才能用这个参数）
+
+-   **间隙锁**
+
+    也称范围锁，访问数据库的时候，锁定多行数据，例如:
+
+    >   事务1执行未提交：update t_user set age = 24 where id > 1 and id < 10; // 其中id不连续，没有id=2的数据
+    >
+    >   事务2执行：Insert into t_user(id, age) value(2, 25); // 此行就被阻塞
+
+-   **页面锁**
+
+    锁定粒度介于表锁和行锁之间
+
+    
+
+    | 锁级别               | 存储引擎                   |
+    | -------------------- | -------------------------- |
+    | 行别（row-level）    | inndb                      |
+    | 表别（table-level）  | inndb、MyISAM，MEMORY，CSV |
+    | 页级别（page-level） | bdb                        |
+
+2、锁的类型
+
+-   **悲观锁**
+
+    每次去拿数据的时候都认为别人会修改，所以每次在拿数据的时候都会上锁，这样别人想拿这个数据就会阻塞直到它拿到锁。添加一个`for update`触发悲观锁
+
+    >   select count from book where id = 1 for update;
+
+-   **乐观锁**
+
+    每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有更新这个数据，可以使用版本号等机制。添加`count = 97`触发乐观锁
+
+    >   update book set count=96 where id = 1 and count = 97;
+
+# 三、Spring篇
 
 ## 1、什么是IOC？
 
@@ -3095,7 +3200,7 @@ public void test() {
 
 ------
 
-# 三、微服务篇
+# 四、微服务篇
 
 ------
 
@@ -3529,31 +3634,31 @@ Transaction ID XID：全局唯一的事务ID
 
 ### 16.2、Seata三个组件模型
 
-- **TC (Transaction Coordinator) - 事务协调者**
+-   **TC (Transaction Coordinator) - 事务协调者**
 
-	维护全局和分支事务的状态，驱动全局事务提交或回滚。
+    维护全局和分支事务的状态，驱动全局事务提交或回滚。
 
-- **TM (Transaction Manager) - 事务管理器**
+-   **TM (Transaction Manager) - 事务管理器**
 
-	定义全局事务的范国：开始全局事务、提交或回滚全局事务。
+    定义全局事务的范国：开始全局事务、提交或回滚全局事务。
 
-- **RM (Resource Manager) - 资源管理器**
+-   **RM (Resource Manager) - 资源管理器**
 
-	管理分支事务处理的资源，与TC交谈以注册分支事务和报告分支事务的状态，井驱动分支事务提交或回滚。
+    管理分支事务处理的资源，与TC交谈以注册分支事务和报告分支事务的状态，井驱动分支事务提交或回滚。
 
 ### 16.3、处理过程
 
-1. TM 向TC 申请开启一个全局事务，全局事务创建成功并生成一个全局唯一的 XID;
-2. XID 在微服务调用链路的上下文中传播；
-3. RM 向TC 注册分支事务，将其纳入XID 对应全局事务的管辖；
-4. TM向TC 发起针对 XID 的全局提交或回滚决议；
-5. TC 调度 XID 下管糖的全部分支事务完成提交或回滚请求。
+1.  TM 向TC 申请开启一个全局事务，全局事务创建成功并生成一个全局唯一的 XID;
+2.  XID 在微服务调用链路的上下文中传播；
+3.  RM 向TC 注册分支事务，将其纳入XID 对应全局事务的管辖；
+4.  TM向TC 发起针对 XID 的全局提交或回滚决议；
+5.  TC 调度 XID 下管糖的全部分支事务完成提交或回滚请求。
 
 <img src="./imgs/seata处理过程.png" alt="seata处理过程.png" style="zoom:50%;" />
 
-# 四、面试题
+# 五、面试题
 
-# 五、IDEA使用技巧
+# 六、IDEA使用技巧
 
 ## 1、常用插件
 
@@ -3561,7 +3666,7 @@ Transaction ID XID：全局唯一的事务ID
 
 [JavaFormatIdea.xml](./files/JavaFormatIdea.xml)
 
-## 2、远程Debug
+## 3、远程Debug
 
 -   IDEA
 
