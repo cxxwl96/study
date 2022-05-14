@@ -32,15 +32,79 @@ Java集合框架图：
 
 ![java集合框架图](./imgs/Java集合框架图.gif)
 
-### 1.3、ArrayList 和 Vector 的区别是什么？
+### 1.3、Java中八种数据结构
 
--   线程安全：Vector 使用了 Synchronized 来实现线程同步，是线程安全的，而 ArrayList 是非线程安全的。
--   性能：ArrayList 在性能方面要优于 Vector。
--   扩容：ArrayList 和 Vector 都会根据实际的需要动态的调整容量，只不过在 Vector 扩容每次会增加 1 倍，而 ArrayList 只会增加 50%。
+-   枚举（Enumeration接口）
+-   位集合（BitSet类）
+-   向量（Vector类）
+-   栈（Stack类）
+-   字典（Dictionary抽象类）
+-   哈希表（Hashtable类）
+-   属性（Properties类）
 
-### 1.4、怎么确保一个集合不能被修改？
+### 1.4、ArrayList、LinkedList 和 Vector 的区别是什么？
 
-可以使用 Collections. unmodifiableCollection(Collection c) 方法来创建一个只读集合，这样改变集合的任何操作都会抛出 Java. lang. UnsupportedOperationException 异常。
+-   线程安全：Vector使用了Synchronized来实现线程同步，是线程安全的，而ArrayList和LinkedList是非线程安全的。
+-   性能：ArrayList在性能方面要优于Vector。对于链式结构的LinkedList而言，随机添加或删除的性能要优于ArrayList和Vector
+-   扩容：ArrayList和Vector都会根据实际的需要动态的调整容量，只不过在 Vector 扩容每次会增加 1 倍，而 ArrayList 只会增加 50%
+
+### 1.5、HashMap、Hashtable、HashSet的区别
+
+-   Hashtable线程安全，HashMap非线程安全
+-   HashMap可以使用null作为key，而Hashtable则不允许null作为key
+-   HashSet实现了Set接口，它不允许集合中有重复的值，HashMap实现了Map接口，Map接口对键值对进行映射
+-   HashSet扩展了HashMap,所以底层还是用到map存储，存储实现同map一致，HashMap储存键值，HashSet存储对象
+
+### 1.6、接口与类的区别
+
+-   接口不能用于实例化对象。接口没有构造方法
+-   接口中所有的方法必须是抽象方法
+-   接口不能包含成员变量，除了 static 和 final 变量
+-   接口不是被类继承了，而是要被类实现。接口支持多继承
+
+### 1.7、迭代器
+
+-   ava.util.Iterator
+
+    Iterator接口是一个专门设计迭代器的
+
+-   java.lang.Iterable
+
+    Iterable接口是专门创建新的迭代器的
+
+    Collection接口继承Iterable接口
+
+### 1.8、Java 泛型
+
+-   泛型方法
+
+    ```java
+    public <T> void test(T param){}
+    // 只允许传入Comparable及其子类类型
+    public <T extends Comparable<T>> void test(T param){}
+    ```
+
+-   泛型类
+
+    ```java
+    public class A<T>{}
+    ```
+
+-   类型通配符
+
+    ```java
+    public void test(List<?> param){}
+    // 只允许传入Number及其子类类型
+    public void test(List<? extend Number> param){}
+    ```
+
+    
+
+
+
+### 1.9、怎么确保一个集合不能被修改？
+
+可以使用 Collections.unmodifiableCollection(Collection c) 方法来创建一个只读集合，这样改变集合的任何操作都会抛出 Java. lang. UnsupportedOperationException 异常。
 
 ```java
 Collections.unmodifiableCollection();
@@ -49,7 +113,7 @@ Collections.unmodifiableMap();
 Collections.unmodifiableSet();
 ```
 
-### 1.5、创建线程有哪几种方式？
+### 1.10、创建线程有哪几种方式？
 
 创建线程有三种方式：
 
@@ -57,11 +121,11 @@ Collections.unmodifiableSet();
 -   实现 Runnable 接口；
 -   实现 Callable 接口；
 
-### 1.6、runnable 和 callable 有什么区别？
+### 1.11、runnable 和 callable 有什么区别？
 
 runnable 没有返回值，callable 可以拿到有返回值
 
-### 1.7、线程有哪些状态？
+### 1.12、线程有哪些状态？
 
 -   New：新建状态
 -   Runnable：可运行状态
@@ -73,7 +137,7 @@ runnable 没有返回值，callable 可以拿到有返回值
 
 <img src="./imgs/线程状态图.jpeg" alt="线程状态图" style="zoom: 85%;" />
 
-### 1.8、线程池都有哪些状态？
+### 1.13、线程池都有哪些状态？
 
 -   Running：接受新的任务，处理等待队列中的任务
 -   Shutdown：不接受新的任务提交，但是会继续处理等待队列中的任务
@@ -85,20 +149,20 @@ runnable 没有返回值，callable 可以拿到有返回值
 
 <img src="./imgs/线程池状态图.png" alt="线程状态图" style="zoom: 75%;" />
 
-### 1.9、sleep() 和 wait() 有什么区别？
+### 1.14、sleep() 和 wait() 有什么区别？
 
 -   类的不同：sleep() 来自 Thread，wait() 来自 Object。
 -   释放锁：sleep() 不释放锁；wait() 释放锁。
 -   用法不同：sleep() 时间到会自动恢复；wait() 可以使用 notify()/notifyAll()直接唤醒。
 
-### 1.10、线程池中 submit() 和 execute() 方法有什么区别？
+### 1.15、线程池中 submit() 和 execute() 方法有什么区别？
 
 -   execute()：只能执行 Runnable 类型的任务
 -   submit()：可以执行 Runnable 和 Callable 类型的任务
 
 Callable 类型的任务可以获取执行的返回值，而 Runnable 执行无返回值。
 
-### 1.11、在 Java 程序中怎么保证多线程的运行安全？
+### 1.16、在 Java 程序中怎么保证多线程的运行安全？
 
 -   使用安全类，比如 Java. util. concurrent 下的类。
 -   使用自动锁 synchronized。
@@ -117,17 +181,36 @@ try {
 }
 ```
 
-### 1.12、如何实现对象克隆？
+### 1.17、怎么终止一个线程?
+
+**1、线程自动终止**
+
+-   线程的任务执行完成
+-   线程在执行任务过程中发生异常
+
+**2、手动终止**
+
+-   调用Thread类中的stop()方法（不推荐使用）
+
+    这个方法会让线程直接终止，在执行的任务立即终止，未执行的任务无法反馈，所以 stop() 方法已经不建议使用
+
+-   调佣Thread类中的interrupt()方法（推荐使用）
+
+    线程只有从runnable状态才能进入terminated状态。如果线程处于 blocked、waiting、timed_waiting，就需要通过Thread类的interrupt()方法，让线程从休眠状态进入runnable状态，从而结束线程。当线程进入 runnable 状态之后，通过设置一个标识位，线程在合适的时机，检查该标识位，发现符合终止条件，自动退出run()方法，线程终止
+
+    
+
+### 1.18、如何实现对象克隆？
 
 -   实现 Cloneable 接口并重写 Object 类中的 clone() 方法。
 -   实现 Serializable 接口，通过对象的序列化和反序列化实现克隆，可以实现真正的深度克隆。
 
-### 1.13、深入讨论-浅拷贝和深拷贝
+### 1.19、深入讨论-浅拷贝和深拷贝
 
 -   对于数据类型是基本数据类型的成员变量，浅拷贝会直接进行值传递。
 -   对于数据类型是引用数据类型的成员变量，那么浅拷贝会进行引用传递。
 
-### 1.14、序列化与反序列化
+### 1.20、序列化与反序列化
 
 ```java
 /**
@@ -179,7 +262,7 @@ public void deSerializable() {
 }
 ```
 
-### 1.15、创建对象的5种方式
+### 1.21、创建对象的5种方式
 
 -   **通过 new 关键字**
 
@@ -194,7 +277,6 @@ public void deSerializable() {
 　　实际上第二种方法利用 Class 的 newInstance() 方法创建对象，其内部调用还是 Constructor 的 newInstance() 方法。
 
 -   **利用 Clone 方法**
-
 -   **反序列化**
 
 ## 2、Java web
@@ -2819,6 +2901,41 @@ ConsoleLogger: 打了一个ERROR级别的log
     每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有更新这个数据，可以使用版本号等机制。添加`count = 97`触发乐观锁
 
     >   update book set count=96 where id = 1 and count = 97;
+
+## 3、MySQL数据库优化的八种方式
+
+1.  选取最适用的字段属性
+
+    创建表的时候，为了获得更好的性能，可以将表中字段的宽度设得尽可能小。
+
+2.  使用连接（JOIN）来代替子查询(Sub-Queries)
+
+3.  使用联合（UNION）来代替手动创建的临时表
+
+4.  使用事务
+
+5.  锁定表
+
+6.  使用外键
+
+7.  使用索引
+
+    一般说来，索引应建立在那些将用于JOIN,WHERE判断和ORDERBY排序的字段上。尽量不要对数据库中某个含有大量重复的值的字段建立索引。
+
+8.  优化的查询语句。
+
+## 4、MySQL查询的优化方法
+
+1.  应尽量避免在 where 子句中使用!=或<>操作符，否则将引擎放弃使用索引而进行全表扫描。
+2.  对查询进行优化，首先应考虑在 where 及 order by 涉及的列上建立索引，避免全表扫描。
+3.  应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引，而进
+4.  尽量避免在 where 子句中使用 or 来连接条件，否则将导致引擎放弃使用索引，而进行全表
+5.  前置百分号的查询也将导致全表扫描
+6.   in 和 not in 也要慎用，否则会导致全表扫描
+7.  如果在 where 子句中使用参数，也会导致全表扫描。可以改为强制查询使用索引
+8.  应尽量避免在 where 子句中对字段进行表达式操作。
+9.  应尽量避免在where子句中对字段进行函数操作。
+10.  不要在 where 子句中的等式判断=左边进行函数、算术运算或其他表达式运算，否则系统将可能无法正确使用索引。
 
 # 三、Spring篇
 
