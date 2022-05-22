@@ -212,55 +212,212 @@ try {
 
 ### 1.20、序列化与反序列化
 
-```java
-/**
- * 序列化
- */
-@Test
-public void serializable() {
-    FileOutputStream fos = null;
-    ObjectOutputStream oos = null;
-    try {
-        final Shape shape = new Shape("张三", 12);
-        fos = new FileOutputStream("shape.txt");
-        oos = new ObjectOutputStream(fos);
-        oos.writeObject(shape);
-    } catch (IOException e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            Objects.requireNonNull(oos).close();
-            Objects.requireNonNull(fos).close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-}
+-   **实现Serializable接口**
 
-/**
- * 反序列化
- */
-@Test
-public void deSerializable() {
-    FileInputStream fis = null;
-    ObjectInputStream ois = null;
-    try {
-        fis = new FileInputStream("shape.txt");
-        ois = new ObjectInputStream(fis);
-        final Shape shape = (Shape) ois.readObject();
-        System.out.println(shape);
-    } catch (IOException | ClassNotFoundException e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            Objects.requireNonNull(ois).close();
-            Objects.requireNonNull(fis).close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    ```java
+    @Data
+    @Accessors(chain = true)
+    public class Person implements Serializable {
+        private String name;
+    
+        private int age;
+    
+        private Date birthday;
+    
+        @Override
+        public String toString() {
+            final String format = new SimpleDateFormat("yyyy-MM-dd").format(birthday);
+            return "Person{" + "name='" + name + '\'' + ", age=" + age + ", birthday=" + format + '}';
         }
     }
-}
-```
+    public class SerializableTest {
+        /**
+         * 序列化
+         */
+        @Test
+        public void serializable() {
+            try (final FileOutputStream fos = new FileOutputStream("person.txt");
+                final ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                final Person person = new Person().setAge(24)
+                    .setName("张三")
+                    .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1996-01-01"));
+                oos.writeObject(person);
+                oos.flush();
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    
+        /**
+         * 反序列化
+         */
+        @Test
+        public void deSerializable() {
+            try (final FileInputStream fis = new FileInputStream("person.txt");
+                final ObjectInputStream ois = new ObjectInputStream(fis)) {
+                final Person person = (Person) ois.readObject();
+                System.out.println(person);
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    ```
+
+    ```tex
+    序列化时间：39ms
+    
+    序列化时间：20ms
+    Person{name='张三', age=24, birthday=1996-01-01}
+    ```
+
+-   **实现Externalizable接口**
+
+    ```java
+    @Data
+    @Accessors(chain = true)
+    public class Person implements Externalizable {
+        private String name;
+    
+        private int age;
+    
+        private Date birthday;
+    
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeObject(name);
+            out.writeInt(age);
+            out.writeObject(birthday);
+        }
+    
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            // 注意这里读取顺序和写入的顺序要一致
+            name = ((String) in.readObject());
+            age = in.readInt();
+            birthday = ((Date) in.readObject());
+        }
+    
+        @Override
+        public String toString() {
+            final String format = new SimpleDateFormat("yyyy-MM-dd").format(birthday);
+            return "Person{" + "name='" + name + '\'' + ", age=" + age + ", birthday=" + format + '}';
+        }
+    }
+    public class SerializableTest {
+        /**
+         * 序列化
+         */
+        @Test
+        public void serializable() {
+            try (final FileOutputStream fos = new FileOutputStream("person.txt");
+                final ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                final long start = System.currentTimeMillis();
+                final Person person = new Person().setAge(24)
+                    .setName("张三")
+                    .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1996-01-01"));
+                oos.writeObject(person);
+                oos.flush();
+                System.out.printf("序列化时间：%dms\n", System.currentTimeMillis() - start);
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    
+        /**
+         * 反序列化
+         */
+        @Test
+        public void deSerializable() {
+            try (final FileInputStream fis = new FileInputStream("person.txt");
+                final ObjectInputStream ois = new ObjectInputStream(fis)) {
+                final long start = System.currentTimeMillis();
+                final Person person = (Person) ois.readObject();
+                System.out.printf("序列化时间：%dms\n", System.currentTimeMillis() - start);
+                System.out.println(person);
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    ```
+
+    ```tex
+    序列化时间：36ms
+    
+    序列化时间：21ms
+    Person{name='张三', age=24, birthday=1996-01-01}
+    ```
+
+-   使用JSON序列化
+
+    ```java
+    @Data
+    @Accessors(chain = true)
+    public class Person {
+        private String name;
+    
+        private int age;
+    
+        private Date birthday;
+    
+        @Override
+        public String toString() {
+            final String format = new SimpleDateFormat("yyyy-MM-dd").format(birthday);
+            return "Person{" + "name='" + name + '\'' + ", age=" + age + ", birthday=" + format + '}';
+        }
+    }
+    public class SerializableTest {
+        /**
+         * 序列化
+         */
+        @Test
+        public void serializable() {
+            try (final FileOutputStream fos = new FileOutputStream("person.txt")) {
+                final long start = System.currentTimeMillis();
+                final Person person = new Person().setAge(24)
+                    .setName("张三")
+                    .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1996-01-01"));
+                final String text = JSON.toJSONString(person);
+                final byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+                fos.write(bytes);
+                fos.flush();
+                System.out.printf("序列化时间：%dms\n", System.currentTimeMillis() - start);
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    
+        /**
+         * 反序列化
+         */
+        @Test
+        public void deSerializable() {
+            try (final FileInputStream fis = new FileInputStream("person.txt")) {
+                final long start = System.currentTimeMillis();
+                final StringBuilder sb = new StringBuilder();
+                final byte[] buff = new byte[1024];
+                while (fis.read(buff) != -1) {
+                    sb.append(new String(buff));
+                }
+                final Person person = JSON.parseObject(sb.toString(), Person.class);
+                System.out.printf("序列化时间：%dms\n", System.currentTimeMillis() - start);
+                System.out.println(person);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    ```
+
+    ```tex
+    序列化时间：141ms
+    
+    序列化时间：161ms
+    Person{name='张三', age=24, birthday=1996-01-01}
+    ```
+
+    
 
 ### 1.21、创建对象的5种方式
 
@@ -3800,7 +3957,6 @@ Transaction ID XID：全局唯一的事务ID
     -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 \
     -jar xxx.jar com.xxx.MainClass
     ```
-    
     
 
 # 博文收藏
